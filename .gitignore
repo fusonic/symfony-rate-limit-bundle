@@ -1,0 +1,4 @@
+/phpunit.xml
+/vendor/
+.idea/*
+.php_cs.cache
