@@ -1,0 +1,16 @@
+services:
+
+    fusonic_rate_limit.event_subscriber:
+        class: Fusonic\RateLimitBundle\EventSubscriber\RateLimitEventSubscriber
+        arguments:
+            - '@fusonic_rate_limit.manager'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    fusonic_rate_limit.manager:
+        class: Fusonic\RateLimitBundle\Manager\RateLimitManager
+        arguments:
+            - '%fusonic_rate_limit%'
+            - 'CACHE_PROVIDER_ADDED_VIA_COMPILER_PASS'
+            - '@logger'
+            - '@event_dispatcher'

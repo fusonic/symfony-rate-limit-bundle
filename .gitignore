@@ -1,4 +1,9 @@
-/phpunit.xml
 /vendor/
+Fusonic/RateLimitBundle/tests/cache
+Fusonic/RateLimitBundle/tests/logs
+
+composer.lock
+phpunit.xml
+
 .idea/*
 .php_cs.cache
