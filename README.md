@@ -1,6 +1,10 @@
 # RateLimitBundle
 
-This bundle provides simple rate limiting based on routes. 
+This bundle provides simple rate limiting based on routes.
+
+[![PHP ~7.1](https://img.shields.io/badge/PHP-~7.1-brightgreen.svg)](https://php.net)
+[![PHP ~7.2](https://img.shields.io/badge/PHP-~7.2-brightgreen.svg)](https://php.net)
+[![Travis Build Status](https://travis-ci.org/fusonic/symfony-rate-limit-bundle.svg?branch=master)](https://travis-ci.org/fusonic/symfony-rate-limit-bundle)
 
 ## Getting started
 
