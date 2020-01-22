@@ -3,10 +3,10 @@
 namespace Fusonic\RateLimitBundle\Event;
 
 use Fusonic\RateLimitBundle\Model\RouteLimitConfigInterface;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class RateLimitAttemptsUpdatedEvent extends Event
 {
@@ -21,11 +21,11 @@ class RateLimitAttemptsUpdatedEvent extends Event
     private $routeLimitConfig;
 
     /**
-     * @var GetResponseEvent
+     * @var RequestEvent
      */
     private $event;
 
-    public function __construct(RouteLimitConfigInterface $routeLimitConfig, string $ip, GetResponseEvent $event)
+    public function __construct(RouteLimitConfigInterface $routeLimitConfig, string $ip, RequestEvent $event)
     {
         $this->ip = $ip;
         $this->routeLimitConfig = $routeLimitConfig;

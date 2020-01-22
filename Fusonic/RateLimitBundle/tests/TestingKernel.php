@@ -22,8 +22,8 @@ class TestingKernel extends Kernel
         return [
             new FrameworkBundle(),
             new DoctrineCacheBundle(),
-            new MonologBundle(),
             new RateLimitBundle(),
+            new MonologBundle(),
         ];
     }
 
@@ -37,7 +37,7 @@ class TestingKernel extends Kernel
     {
         $loader->load(
             function (ContainerBuilder $container) {
-                $container->loadFromExtension('framework', ['secret' => 'foo']);
+                $container->loadFromExtension('framework', ['secret' => 'foo', 'test' => true]);
                 $container->loadFromExtension(
                     'doctrine_cache',
                     [
@@ -51,13 +51,20 @@ class TestingKernel extends Kernel
                         ],
                     ]
                 );
+                $container->loadFromExtension(
+                    'monolog',
+                    [
+                        'handlers' => [
+                            'file_log' => [
+                                'type' => 'stream',
+                                'path' => '%kernel.logs_dir%/%kernel.environment%.log',
+                                'level' => 'debug',
+                            ],
+                        ],
+                    ]
+                );
                 $container->loadFromExtension('fusonic_rate_limit', $this->config);
             }
         );
-    }
-
-    public function getCacheDir()
-    {
-        return __DIR__.'/cache/'.spl_object_hash($this);
     }
 }

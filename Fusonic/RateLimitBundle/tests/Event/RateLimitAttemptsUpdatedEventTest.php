@@ -7,7 +7,7 @@ use Fusonic\RateLimitBundle\Model\RouteLimitConfig;
 use Fusonic\RateLimitBundle\Tests\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 class RateLimitAttemptsUpdatedEventTest extends TestCase
 {
@@ -18,7 +18,7 @@ class RateLimitAttemptsUpdatedEventTest extends TestCase
         $limit = 3;
         $ip = '1.1.1.1';
         $config = RouteLimitConfig::fromRouteConfig($route, ['limit' => $limit, 'period' => $period]);
-        $responseEvent = $event = $this->createMock(GetResponseEvent::class);
+        $responseEvent = $event = $this->createMock(RequestEvent::class);
 
         $request = Request::create($route, 'GET', ['_route' => $route]);
         $event->method('getRequest')->willReturn($request);

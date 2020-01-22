@@ -2,6 +2,7 @@ services:
 
     fusonic_rate_limit.event_subscriber:
         class: Fusonic\RateLimitBundle\EventSubscriber\RateLimitEventSubscriber
+        public: true
         arguments:
             - '@fusonic_rate_limit.manager'
         tags:

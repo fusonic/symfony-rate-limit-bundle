@@ -12,11 +12,12 @@
         <ini name="intl.error_level" value="0"/>
         <ini name="memory_limit" value="-1"/>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
+        <env name="KERNEL_CLASS" value="Fusonic\RateLimitBundle\Tests\TestingKernel" />
     </php>
 
     <testsuites>
         <testsuite name="Test suite">
-            <directory suffix="Test.php">./Fusonic/RateLimitBundle/tests</directory>
+            <directory>./Fusonic/RateLimitBundle/tests</directory>
         </testsuite>
     </testsuites>
 

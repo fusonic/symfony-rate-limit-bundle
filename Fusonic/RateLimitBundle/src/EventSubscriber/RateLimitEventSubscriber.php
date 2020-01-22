@@ -6,7 +6,7 @@ use Fusonic\RateLimitBundle\Event\RateLimitEvents;
 use Fusonic\RateLimitBundle\Event\RateLimitResetAttemptsEvent;
 use Fusonic\RateLimitBundle\Manager\RateLimitManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class RateLimitEventSubscriber implements EventSubscriberInterface
@@ -21,7 +21,7 @@ class RateLimitEventSubscriber implements EventSubscriberInterface
         $this->rateLimitManager = $rateLimitManager;
     }
 
-    public function onKernelRequest(GetResponseEvent $event): void
+    public function onKernelRequest(RequestEvent $event): void
     {
         if ($event->isMasterRequest()) {
             $this->rateLimitManager->handleRequest($event);

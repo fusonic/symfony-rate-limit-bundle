@@ -2,7 +2,7 @@
 
 namespace Fusonic\RateLimitBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class RateLimitResetAttemptsEvent extends Event
 {

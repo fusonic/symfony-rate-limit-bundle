@@ -2,16 +2,16 @@
 
 namespace Fusonic\RateLimitBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 final class RateLimitEvents extends Event
 {
     // Emitted
-    public const ROUTE_LIMIT_EXCEEDED = 'fusonic_rate_limit.route_limit_exceeded';
-    public const ROUTE_ATTEMPTS_UPDATED = 'fusonic_rate_limit.route_attempts_updated';
+    public const ROUTE_LIMIT_EXCEEDED = RateLimitExceededEvent::class;
+    public const ROUTE_ATTEMPTS_UPDATED = RateLimitAttemptsUpdatedEvent::class;
 
     // Handled
-    public const ROUTE_RESET_ATTEMPTS = 'fusonic_rate_limit.route_reset_attempts';
+    public const ROUTE_RESET_ATTEMPTS = RateLimitResetAttemptsEvent::class;
 
     private function __construct()
     {

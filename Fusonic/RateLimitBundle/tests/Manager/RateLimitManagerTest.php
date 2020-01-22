@@ -4,7 +4,7 @@ namespace Fusonic\RateLimitBundle\Tests\Manager;
 
 use Fusonic\RateLimitBundle\Tests\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 class RateLimitManagerTest extends TestCase
 {
@@ -60,7 +60,7 @@ class RateLimitManagerTest extends TestCase
         $id = sha1($ip.$route);
         $request = Request::create('/foo', 'GET', ['_route' => $route]);
 
-        $event = $this->createMock(GetResponseEvent::class);
+        $event = $this->createMock(RequestEvent::class);
         $event->method('isMasterRequest')->willReturn(true);
         $event->method('getRequest')->willReturn($request);
 
@@ -94,7 +94,7 @@ class RateLimitManagerTest extends TestCase
         $id = sha1($ip.$route);
         $request = Request::create('/foo', 'GET', ['_route' => $route]);
 
-        $event = $this->createMock(GetResponseEvent::class);
+        $event = $this->createMock(RequestEvent::class);
         $event->method('isMasterRequest')->willReturn(true);
         $event->method('getRequest')->willReturn($request);
 

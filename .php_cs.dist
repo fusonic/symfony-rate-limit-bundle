@@ -3,6 +3,7 @@
 $finder = PhpCsFixer\Finder::create()
     ->exclude('bin')
     ->exclude('vendor')
+    ->exclude('var')
     ->exclude('tests')
     ->in(__DIR__)
 ;

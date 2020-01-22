@@ -9,9 +9,8 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('fusonic_rate_limit');
-
+        $treeBuilder = new TreeBuilder('fusonic_rate_limit');
+        $rootNode = $treeBuilder->getRootNode();
         $rootNode
                 ->canBeEnabled()
                 ->children()

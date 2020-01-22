@@ -1,9 +1,10 @@
 /vendor/
-Fusonic/RateLimitBundle/tests/cache
-Fusonic/RateLimitBundle/tests/logs
+/var/log
+/var/cache
 
 composer.lock
 phpunit.xml
+.phpunit.result.cache
 
 .idea/*
 .php_cs.cache

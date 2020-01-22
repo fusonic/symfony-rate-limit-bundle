@@ -2,12 +2,11 @@
 
 namespace Fusonic\RateLimitBundle\Tests\EventSubscriber;
 
-use Fusonic\RateLimitBundle\Event\RateLimitEvents;
 use Fusonic\RateLimitBundle\Event\RateLimitResetAttemptsEvent;
 use Fusonic\RateLimitBundle\Tests\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -37,19 +36,19 @@ class RateLimitEventSubscriberTest extends TestCase
         $cache = $this->container->get('fusonic_rate_limit.cache_provider');
         $this->assertFalse($cache->contains($id));
 
-        $this->dispatchGetResponseEventAttemptsEvent($request);
+        $this->dispatchRequestEvent($request);
 
         $this->assertTrue($cache->contains($id));
         $cacheEntry = $cache->fetch($id);
         $this->assertEquals(1, $cacheEntry);
 
-        $this->dispatchGetResponseEventAttemptsEvent($request);
+        $this->dispatchRequestEvent($request);
 
         $this->assertTrue($cache->contains($id));
         $cacheEntry = $cache->fetch($id);
         $this->assertEquals(2, $cacheEntry);
 
-        $this->dispatchGetResponseEventAttemptsEvent($request);
+        $this->dispatchRequestEvent($request);
 
         $this->assertTrue($cache->contains($id));
         $cacheEntry = $cache->fetch($id);
@@ -60,19 +59,16 @@ class RateLimitEventSubscriberTest extends TestCase
     {
         /** @var EventDispatcherInterface $dispatch */
         $dispatch = $this->container->get('event_dispatcher');
-        $dispatch->dispatch(
-            RateLimitEvents::ROUTE_RESET_ATTEMPTS,
-            new RateLimitResetAttemptsEvent($route, $ip)
-        );
+        $dispatch->dispatch(new RateLimitResetAttemptsEvent($route, $ip));
     }
 
-    private function dispatchGetResponseEventAttemptsEvent(Request $request): void
+    private function dispatchRequestEvent(Request $request): void
     {
         /** @var EventDispatcherInterface $dispatch */
         $dispatch = $this->container->get('event_dispatcher');
         $dispatch->dispatch(
-            KernelEvents::REQUEST,
-            new GetResponseEvent($this->kernel, $request, HttpKernelInterface::MASTER_REQUEST)
+            new RequestEvent($this->kernel, $request, HttpKernelInterface::MASTER_REQUEST),
+            KernelEvents::REQUEST
         );
     }
 }

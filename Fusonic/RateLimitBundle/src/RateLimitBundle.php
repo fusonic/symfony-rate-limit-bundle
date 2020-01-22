@@ -3,9 +3,9 @@
 namespace Fusonic\RateLimitBundle;
 
 use Fusonic\RateLimitBundle\DependencyInjection\CacheProviderPass;
+use Fusonic\RateLimitBundle\DependencyInjection\RateLimitExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Fusonic\RateLimitBundle\DependencyInjection\RateLimitExtension;
 
 class RateLimitBundle extends Bundle
 {

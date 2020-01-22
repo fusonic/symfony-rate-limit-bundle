@@ -3,13 +3,12 @@
 namespace Fusonic\RateLimitBundle\Manager;
 
 use Doctrine\Common\Cache\CacheProvider;
-use Fusonic\RateLimitBundle\Event\RateLimitEvents;
-use Fusonic\RateLimitBundle\Event\RateLimitExceededEvent;
 use Fusonic\RateLimitBundle\Event\RateLimitAttemptsUpdatedEvent;
+use Fusonic\RateLimitBundle\Event\RateLimitExceededEvent;
 use Fusonic\RateLimitBundle\Model\RouteLimitConfig;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 class RateLimitManager implements RateLimitManagerInterface
 {
@@ -53,7 +52,7 @@ class RateLimitManager implements RateLimitManagerInterface
         }
     }
 
-    public function handleRequest(GetResponseEvent $event): void
+    public function handleRequest(RequestEvent $event): void
     {
         $request = $event->getRequest();
         $route = $request->get('_route');
@@ -75,7 +74,7 @@ class RateLimitManager implements RateLimitManagerInterface
             );
 
             $exceededEvent = new RateLimitExceededEvent($routeConfig, $ip, $event);
-            $this->dispatcher->dispatch(RateLimitEvents::ROUTE_LIMIT_EXCEEDED, $exceededEvent);
+            $this->dispatcher->dispatch($exceededEvent);
 
             return;
         }
@@ -85,7 +84,7 @@ class RateLimitManager implements RateLimitManagerInterface
         );
 
         $updateEvent = new RateLimitAttemptsUpdatedEvent($routeConfig, $ip, $event);
-        $this->dispatcher->dispatch(RateLimitEvents::ROUTE_ATTEMPTS_UPDATED, $updateEvent);
+        $this->dispatcher->dispatch($updateEvent);
     }
 
     protected function isRateLimitEnabled(): bool
