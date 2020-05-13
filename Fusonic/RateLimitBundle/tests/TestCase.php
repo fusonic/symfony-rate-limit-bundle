@@ -2,7 +2,7 @@
 
 namespace Fusonic\RateLimitBundle\Tests;
 
-use Doctrine\Common\Cache\CacheProvider;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -10,7 +10,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected const CONFIG = [
         'enabled' => true,
-        'cache_provider' => 'doctrine_cache.providers.rate_limit_cache',
+        'cache_provider' => 'cache.app',
         'routes' => [
             'foo' => [
                 'limit' => 2,
@@ -42,8 +42,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
-        /** @var CacheProvider $cache */
+        /** @var  CacheItemPoolInterface $cache */
         $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $cache->deleteAll();
+        $cache->clear();
     }
 }

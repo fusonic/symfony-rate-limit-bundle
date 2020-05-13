@@ -2,10 +2,10 @@
 
 namespace Fusonic\RateLimitBundle\Manager;
 
-use Doctrine\Common\Cache\CacheProvider;
 use Fusonic\RateLimitBundle\Event\RateLimitAttemptsUpdatedEvent;
 use Fusonic\RateLimitBundle\Event\RateLimitExceededEvent;
 use Fusonic\RateLimitBundle\Model\RouteLimitConfig;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -18,9 +18,9 @@ class RateLimitManager implements RateLimitManagerInterface
     private $rateLimitConfig;
 
     /**
-     * @var CacheProvider
+     * @var CacheItemPoolInterface
      */
-    private $cacheProvider;
+    private $cache;
 
     /**
      * @var LoggerInterface
@@ -34,12 +34,12 @@ class RateLimitManager implements RateLimitManagerInterface
 
     public function __construct(
         array $rateLimitConfig,
-        CacheProvider $cacheProvider,
+        CacheItemPoolInterface $cache,
         LoggerInterface $logger,
         EventDispatcherInterface $dispatcher
     ) {
         $this->rateLimitConfig = $rateLimitConfig;
-        $this->cacheProvider = $cacheProvider;
+        $this->cache = $cache;
         $this->logger = $logger;
         $this->dispatcher = $dispatcher;
     }
@@ -47,8 +47,8 @@ class RateLimitManager implements RateLimitManagerInterface
     public function resetAttemptsForIpAndRoute(string $ip, string $route): void
     {
         if ($this->isRateLimitEnabled() && $this->isRouteRateLimited($route)) {
-            $cacheId = $this->generateCacheId($ip, $route);
-            $this->cacheProvider->delete($cacheId);
+            $key = $this->generateCacheKey($ip, $route);
+            $this->cache->deleteItem($key);
         }
     }
 
@@ -63,10 +63,17 @@ class RateLimitManager implements RateLimitManagerInterface
         }
 
         $routeConfig = RouteLimitConfig::fromRouteConfig($route, $this->getRouteConfig($route));
-        $cacheId = $this->generateCacheId($ip, $route);
+        $key = $this->generateCacheKey($ip, $route);
 
-        $attempts = $this->cacheProvider->fetch($cacheId) ?: 0;
-        $this->cacheProvider->save($cacheId, ++$attempts, $routeConfig->getPeriod());
+        $attempts = 1;
+        $item = $this->cache->getItem($key);
+        if ($item->isHit()) {
+            $attempts = $item->get() + 1;
+        }
+
+        $item->set($attempts);
+        $item->expiresAfter($routeConfig->getPeriod());
+        $this->cache->save($item);
 
         if ($attempts > $routeConfig->getLimit()) {
             $this->logger->critical(
@@ -103,7 +110,7 @@ class RateLimitManager implements RateLimitManagerInterface
         return $this->rateLimitConfig['routes'][$route];
     }
 
-    protected function generateCacheId(string $ip, string $route): string
+    protected function generateCacheKey(string $ip, string $route): string
     {
         return sha1($ip.$route);
     }

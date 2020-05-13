@@ -3,6 +3,8 @@
 namespace Fusonic\RateLimitBundle\Tests\Manager;
 
 use Fusonic\RateLimitBundle\Tests\TestCase;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
@@ -14,13 +16,13 @@ class RateLimitManagerTest extends TestCase
         $ip = '1.1.1.1';
         $id = sha1($ip.$route);
 
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $cache->save($id, 5, 3600);
-        $this->assertTrue($cache->contains($id));
+        $cache = $this->getCache();
+        $this->createItem($id);
+        $this->assertTrue($cache->getItem($id)->isHit());
 
         $manager = $this->container->get('fusonic_rate_limit.manager');
         $manager->resetAttemptsForIpAndRoute($ip, 'foo');
-        $this->assertFalse($cache->contains($id));
+        $this->assertFalse($cache->getItem($id)->isHit());
     }
 
     public function testResetRateLimitForNotExistingRoute(): void
@@ -29,13 +31,13 @@ class RateLimitManagerTest extends TestCase
         $ip = '1.1.1.1';
         $id = sha1($ip.$route);
 
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $cache->save($id, 5, 3600);
-        $this->assertTrue($cache->contains($id));
+        $cache = $this->getCache();
+        $this->createItem($id);
+        $this->assertTrue($cache->getItem($id)->isHit());
 
         $manager = $this->container->get('fusonic_rate_limit.manager');
         $manager->resetAttemptsForIpAndRoute($ip, 'foo2');
-        $this->assertTrue($cache->contains($id));
+        $this->assertTrue($cache->getItem($id)->isHit());
     }
 
     public function testResetRateLimitForDifferentIp(): void
@@ -44,13 +46,13 @@ class RateLimitManagerTest extends TestCase
         $ip = '1.1.1.1';
         $id = sha1($ip.$route);
 
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $cache->save($id, 5, 3600);
-        $this->assertTrue($cache->contains($id));
+        $cache = $this->getCache();
+        $this->createItem($id);
+        $this->assertTrue($cache->getItem($id)->isHit());
 
         $manager = $this->container->get('fusonic_rate_limit.manager');
         $manager->resetAttemptsForIpAndRoute('1.1.1.2', $route);
-        $this->assertTrue($cache->contains($id));
+        $this->assertTrue($cache->getItem($id)->isHit());
     }
 
     public function testHandlingRequestsForDefinedRoute(): void
@@ -64,27 +66,27 @@ class RateLimitManagerTest extends TestCase
         $event->method('isMasterRequest')->willReturn(true);
         $event->method('getRequest')->willReturn($request);
 
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $this->assertFalse($cache->contains($id));
+        $cache = $this->getCache();
+        $this->assertFalse($cache->getItem($id)->isHit());
 
         $manager = $this->container->get('fusonic_rate_limit.manager');
         $manager->handleRequest($event);
-        $this->assertTrue($cache->contains($id));
+        $this->assertTrue($cache->getItem($id)->isHit());
 
-        $cacheEntry = $cache->fetch($id);
-        $this->assertEquals(1, $cacheEntry);
-
-        $manager->handleRequest($event);
-        $this->assertTrue($cache->contains($id));
-
-        $cacheEntry = $cache->fetch($id);
-        $this->assertEquals(2, $cacheEntry);
+        $cacheEntry = $cache->getItem($id);
+        $this->assertEquals(1, $cacheEntry->get());
 
         $manager->handleRequest($event);
-        $this->assertTrue($cache->contains($id));
+        $this->assertTrue($cache->getItem($id)->isHit());
 
-        $cacheEntry = $cache->fetch($id);
-        $this->assertEquals(3, $cacheEntry);
+        $cacheEntry = $cache->getItem($id);
+        $this->assertEquals(2, $cacheEntry->get());
+
+        $manager->handleRequest($event);
+        $this->assertTrue($cache->getItem($id)->isHit());
+
+        $cacheEntry = $cache->getItem($id);
+        $this->assertEquals(3, $cacheEntry->get());
     }
 
     public function testHandlingRequestsForNotDefinedRoute(): void
@@ -98,11 +100,31 @@ class RateLimitManagerTest extends TestCase
         $event->method('isMasterRequest')->willReturn(true);
         $event->method('getRequest')->willReturn($request);
 
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $this->assertFalse($cache->contains($id));
+        $cache = $this->getCache();
+        $this->assertFalse($cache->getItem($id)->isHit());
 
         $manager = $this->container->get('fusonic_rate_limit.manager');
         $manager->handleRequest($event);
-        $this->assertFalse($cache->contains($id));
+        $this->assertFalse($cache->getItem($id)->isHit());
+    }
+
+    private function getCache(): CacheItemPoolInterface
+    {
+        /** @var CacheItemPoolInterface $cache */
+        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
+
+        return $cache;
+    }
+
+    private function createItem(string $id, int $value = 5, int $ttl = 3600): CacheItemInterface
+    {
+        $cache = $this->getCache();
+
+        $item = $cache->getItem($id);
+        $item->set($value);
+        $item->expiresAfter($ttl);
+        $cache->save($item);
+
+        return $item;
     }
 }

@@ -4,6 +4,8 @@ namespace Fusonic\RateLimitBundle\Tests\EventSubscriber;
 
 use Fusonic\RateLimitBundle\Event\RateLimitResetAttemptsEvent;
 use Fusonic\RateLimitBundle\Tests\TestCase;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -18,12 +20,13 @@ class RateLimitEventSubscriberTest extends TestCase
         $ip = '1.1.1.1';
         $id = sha1($ip.$route);
 
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $cache->save($id, 5, 3600);
-        $this->assertTrue($cache->contains($id));
+        /** @var  $cache */
+        $cache = $this->getCache();
+        $this->createItem($id);
+        $this->assertTrue($cache->getItem($id)->isHit());
         $this->dispatchResetAttemptsEvent($route, $ip);
 
-        $this->assertFalse($cache->contains($id));
+        $this->assertFalse($cache->getItem($id)->isHit());
     }
 
     public function testRateLimitAttemptsUpdateEventHandling(): void
@@ -33,26 +36,26 @@ class RateLimitEventSubscriberTest extends TestCase
         $id = sha1($ip.$route);
 
         $request = Request::create('/foo', 'GET', ['_route' => $route]);
-        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
-        $this->assertFalse($cache->contains($id));
+        $cache = $this->getCache();
+        $this->assertFalse($cache->getItem($id)->isHit());
 
         $this->dispatchRequestEvent($request);
 
-        $this->assertTrue($cache->contains($id));
-        $cacheEntry = $cache->fetch($id);
-        $this->assertEquals(1, $cacheEntry);
+        $this->assertTrue($cache->getItem($id)->isHit());
+        $cacheEntry = $cache->getItem($id);
+        $this->assertEquals(1, $cacheEntry->get());
 
         $this->dispatchRequestEvent($request);
 
-        $this->assertTrue($cache->contains($id));
-        $cacheEntry = $cache->fetch($id);
-        $this->assertEquals(2, $cacheEntry);
+        $this->assertTrue($cache->getItem($id)->isHit());
+        $cacheEntry = $cache->getItem($id);
+        $this->assertEquals(2, $cacheEntry->get());
 
         $this->dispatchRequestEvent($request);
 
-        $this->assertTrue($cache->contains($id));
-        $cacheEntry = $cache->fetch($id);
-        $this->assertEquals(3, $cacheEntry);
+        $this->assertTrue($cache->getItem($id)->isHit());
+        $cacheEntry = $cache->getItem($id);
+        $this->assertEquals(3, $cacheEntry->get());
     }
 
     private function dispatchResetAttemptsEvent($route, $ip): void
@@ -70,5 +73,25 @@ class RateLimitEventSubscriberTest extends TestCase
             new RequestEvent($this->kernel, $request, HttpKernelInterface::MASTER_REQUEST),
             KernelEvents::REQUEST
         );
+    }
+
+    private function getCache(): CacheItemPoolInterface
+    {
+        /** @var CacheItemPoolInterface $cache */
+        $cache = $this->container->get('fusonic_rate_limit.cache_provider');
+
+        return $cache;
+    }
+
+    private function createItem(string $id, int $value = 5, int $ttl = 3600): CacheItemInterface
+    {
+        $cache = $this->getCache();
+
+        $item = $cache->getItem($id);
+        $item->set($value);
+        $item->expiresAfter($ttl);
+        $cache->save($item);
+
+        return $item;
     }
 }

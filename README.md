@@ -2,10 +2,6 @@
 
 This bundle provides simple rate limiting based on routes.
 
-[![PHP ~7.1](https://img.shields.io/badge/PHP-~7.1-brightgreen.svg)](https://php.net)
-[![PHP ~7.2](https://img.shields.io/badge/PHP-~7.2-brightgreen.svg)](https://php.net)
-[![Travis Build Status](https://travis-ci.org/fusonic/symfony-rate-limit-bundle.svg?branch=master)](https://travis-ci.org/fusonic/symfony-rate-limit-bundle)
-
 ## Getting started
 
 1. Install bundle:
@@ -14,30 +10,25 @@ This bundle provides simple rate limiting based on routes.
 composer require fusonic/rate-limit-bundle
 ```
 
-2. Add DoctrineCacheBundle and RateLimitBundle to kernel:
+2. Add RateLimitBundle to kernel:
 
 ```PHP
-new \Doctrine\Bundle\DoctrineCacheBundle\DoctrineCacheBundle()
-new Fusonic\RateLimitBundle\RateLimitBundle()
+    Fusonic\RateLimitBundle\RateLimitBundle::class => ['prod' => true],
 ```
 
-3. Add cache provider config
+3. Add cache config
 
 ```YAML
-doctrine_cache:
-    providers:
-        rate_limit_cache:
-            file_system:
-                extension: ".cache"
-                directory: "%kernel.cache_dir%/ratelimit"
-
+framework:
+    cache:
+        app: cache.adapter.array
 ```
 
 4. Add rate limit config
 
 ```YAML
 fusonic_rate_limit:
-    cache_provider: "doctrine_cache.providers.rate_limit_cache"
+    cache_provider: "cache.app"
     enabled: true
     routes:
         foo:

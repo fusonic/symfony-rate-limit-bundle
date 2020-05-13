@@ -2,7 +2,6 @@
 
 namespace Fusonic\RateLimitBundle\Tests;
 
-use Doctrine\Bundle\DoctrineCacheBundle\DoctrineCacheBundle;
 use Fusonic\RateLimitBundle\RateLimitBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\MonologBundle\MonologBundle;
@@ -21,7 +20,6 @@ class TestingKernel extends Kernel
     {
         return [
             new FrameworkBundle(),
-            new DoctrineCacheBundle(),
             new RateLimitBundle(),
             new MonologBundle(),
         ];
@@ -37,17 +35,13 @@ class TestingKernel extends Kernel
     {
         $loader->load(
             function (ContainerBuilder $container) {
-                $container->loadFromExtension('framework', ['secret' => 'foo', 'test' => true]);
                 $container->loadFromExtension(
-                    'doctrine_cache',
+                    'framework',
                     [
-                        'providers' => [
-                            'rate_limit_cache' => [
-                                'file_system' => [
-                                    'extension' => '.cache',
-                                    'directory' => '%kernel.cache_dir%/ratelimit',
-                                ],
-                            ],
+                        'secret' => 'foo',
+                        'test' => true,
+                        'cache' => [
+                            'app' => 'cache.adapter.array',
                         ],
                     ]
                 );
