@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class CacheProviderPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $cacheServiceId = $container->getParameter('fusonic_rate_limit')['cache_provider'];
 

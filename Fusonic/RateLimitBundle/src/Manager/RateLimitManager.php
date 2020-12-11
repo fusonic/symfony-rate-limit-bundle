@@ -99,7 +99,7 @@ class RateLimitManager implements RateLimitManagerInterface
         return isset($this->rateLimitConfig['enabled']) && true === $this->rateLimitConfig['enabled'];
     }
 
-    protected function isRouteRateLimited($route): bool
+    protected function isRouteRateLimited(string $route): bool
     {
         return array_key_exists($route, $this->rateLimitConfig['routes']) &&
             isset($this->rateLimitConfig['routes'][$route]);
